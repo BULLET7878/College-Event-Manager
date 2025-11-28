@@ -199,14 +199,11 @@ const RootNavigator = () => {
 
 /**
  * Main App Navigator
- * Wraps the root navigator in NavigationContainer
+ * Wraps the root navigator
+ * Note: NavigationContainer is provided in App.js
  */
 const AppNavigator = () => {
-    return (
-        <NavigationContainer>
-            <RootNavigator />
-        </NavigationContainer>
-    );
+    return <RootNavigator />;
 };
 
 /**
