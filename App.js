@@ -1,13 +1,17 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { UserProvider } from './src/context/UserContext';
-import AppNavigator from './src/navigation/AppNavigator';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import AppNavigator from "./src/navigation/AppNavigator";
+import { EventsProvider } from "./src/context/EventsContext";
+import { UserProvider } from "./src/context/UserContext";
 
 export default function App() {
   return (
-    <UserProvider>
-      <AppNavigator />
-      <StatusBar style="auto" />
-    </UserProvider>
+    <EventsProvider>
+      <UserProvider>
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      </UserProvider>
+    </EventsProvider>
   );
 }
