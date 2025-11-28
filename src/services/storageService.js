@@ -1,72 +1,67 @@
-const fs = require("fs");
-const path = require("path");
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-let storedFiles = [];
-let currentId = 1;
 
-const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
+export const CAMPUSHUB_EVENTS = "CAMPUSHUB_EVENTS";
+export const CAMPUSHUB_REGISTRATIONS = "CAMPUSHUB_REGISTRATIONS";
+export const CAMPUSHUB_INTERESTED = "CAMPUSHUB_INTERESTED";
+export const CAMPUSHUB_CURRENT_USER = "CAMPUSHUB_CURRENT_USER";
 
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR);
-}
 
-// 1. Save file
-function saveFile(file) {
-  if (!file) return { error: "No file provided" };
-
-  const newFileName = `${Date.now()}_${file.originalname}`;
-  const filePath = path.join(UPLOAD_DIR, newFileName);
-
-  // Save file to the disk
-  fs.writeFileSync(filePath, file.buffer);
-
-  const fileData = {
-    id: currentId++,
-    name: newFileName,
-    originalName: file.originalname,
-    size: file.size,
-    mimeType: file.mimetype,
-    path: filePath,
-    url: `/uploads/${newFileName}`
-  };
-
-  storedFiles.push(fileData);
-
-  return fileData;
-}
-
-// 2. Get file metadata by ID
-function getFileById(id) {
-  const file = storedFiles.find(f => f.id === Number(id));
-  if (!file) return { error: "File not found" };
-  return file;
-}
-
-// 3. Delete file by ID
-function deleteFile(id) {
-  const index = storedFiles.findIndex(f => f.id === Number(id));
-  if (index === -1) return { error: "File not found" };
-
-  const file = storedFiles[index];
-
-  // Removes file from the disk
-  if (fs.existsSync(file.path)) {
-    fs.unlinkSync(file.path);
+export async function saveKey(key, value) {
+  try {
+    await AsyncStorage.setItem(key, JSON.stringify(value));
+    return { success: true };
+  } catch (error) {
+    return { success: false, error };
   }
-
-  storedFiles.splice(index, 1);
-
-  return { success: true };
 }
 
-// 4. List all stored files
-function listFiles() {
-  return storedFiles;
+
+export async function loadKey(key) {
+  try {
+    const value = await AsyncStorage.getItem(key);
+    return value ? JSON.parse(value) : null;
+  } catch (error) {
+    return null;
+  }
 }
 
-module.exports = {
-  saveFile,
-  getFileById,
-  deleteFile,
-  listFiles
-};
+
+export async function loadAll() {
+  try {
+    const events = JSON.parse(await AsyncStorage.getItem(CAMPUSHUB_EVENTS)) || [];
+    const registrations = JSON.parse(await AsyncStorage.getItem(CAMPUSHUB_REGISTRATIONS)) || [];
+    const interested = JSON.parse(await AsyncStorage.getItem(CAMPUSHUB_INTERESTED)) || [];
+    const currentUser = JSON.parse(await AsyncStorage.getItem(CAMPUSHUB_CURRENT_USER)) || null;
+
+    return { events, registrations, interested, currentUser };
+  } catch (error) {
+    return { events: [], registrations: [], interested: [], currentUser: null };
+  }
+}
+
+
+export async function saveAll({ events, registrations, interested }) {
+  try {
+    await AsyncStorage.setItem(CAMPUSHUB_EVENTS, JSON.stringify(events));
+    await AsyncStorage.setItem(CAMPUSHUB_REGISTRATIONS, JSON.stringify(registrations));
+    await AsyncStorage.setItem(CAMPUSHUB_INTERESTED, JSON.stringify(interested));
+    return { success: true };
+  } catch (error) {
+    return { success: false, error };
+  }
+}
+
+
+export async function clearAll() {
+  try {
+    await AsyncStorage.clear();
+    return { success: true };
+  } catch (error) {
+    return { success: false, error };
+  }
+}
+
+export function migrateIfNeeded(data) {
+  return data;
+}
