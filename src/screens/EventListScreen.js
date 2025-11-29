@@ -7,6 +7,13 @@ import { useTheme } from '../context/ThemeContext';
 
 const EventListScreen = ({ navigation }) => {
     const { events, loading } = useEvents();
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchEvents(); // from context
+        setRefreshing(false);
+    };
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -71,9 +78,11 @@ const EventListScreen = ({ navigation }) => {
         <View style={styles.container}>
             <FlatList
                 data={events}
+                refreshing={refreshing}
                 renderItem={renderItem}
                 keyExtractor={item => item.id}
                 contentContainerStyle={styles.listContent}
+                onRefresh={handleRefresh}
                 ListEmptyComponent={
                     <View style={styles.centerContainer}>
                         <Text style={styles.emptyText}>No events available</Text>
